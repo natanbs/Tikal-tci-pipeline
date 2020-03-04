@@ -1,0 +1,37 @@
+@Library("tikal-pipelib") _
+
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('TEST')
+        {
+            steps
+            {
+                echo "Testing Advanced Slack Notification"
+                tplSetRandomBuildStatus()
+            }
+        }
+    }
+    post
+    {
+        success
+        {
+            tplAdvancedSlackNotification('SUCCESS',"jenkins-notifications")
+        }
+
+        failure
+        {
+            tplAdvancedSlackNotification('FAILURE',"jenkins-notifications")
+        }
+        unstable
+        {
+            tplAdvancedSlackNotification('UNSTABLE',"jenkins-notifications")
+        }
+        aborted
+        {
+            tplAdvancedSlackNotification('ABORTED',"jenkins-notifications")
+        }
+    }
+}

@@ -1,0 +1,60 @@
+@Library ("tci-library") _
+
+def dockerImage
+
+pipeline {
+    agent { label 'tci-jnlp-node' }
+    options {
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        ansiColor('xterm')
+        skipDefaultCheckout()
+    }
+    parameters {
+        choice (
+                choices: 'minimal\nfull',
+                description: 'Which tci-master version to build: minimal or full',
+                name : 'TYPE')
+        string (
+                defaultValue: '',
+                description: 'tci-master version',
+                name : 'VERSION')
+        booleanParam (
+                defaultValue: false,
+                description: 'Publish the image to DockerHub?',
+                name : 'PUBLISH')
+    }
+
+    stages {
+        stage("Setup") {
+            steps {
+                script {
+                    currentBuild.displayName += " [TYPE] ${params.TYPE} [VERSION] ${params.VERSION} [PUBLISH?] ${params.PUBLISH}"
+                    tciGit.gitCheckout(repoUrl: "git@github.com:TikalCI/tci-bloody-jenkins.git", dir: "tci-bloody-jenkins", branch: "cust/${params.TYPE}")
+                }
+            }
+        }
+        stage("Docker build") {
+            steps {
+                script {
+                    dockerImage = docker.build("tikalci/tci-master-${params.TYPE}:latest","tci-bloody-jenkins")
+                    dockerImage.tag("${params.VERSION}")
+                }
+            }
+        }
+        stage("Publish") {
+            when {
+                expression { return params.PUBLISH }
+            }
+            steps {
+                script {
+
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        dockerImage.push("latest")
+                        dockerImage.push("${params.VERSION}")
+                    }
+                }
+            }
+        }
+    }
+}

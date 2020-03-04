@@ -1,0 +1,22 @@
+@Library ("tci-library") _
+
+pipeline {
+    agent { label 'tci-jnlp-node' }
+    options {
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        ansiColor('xterm')
+        skipDefaultCheckout()
+    }
+    stages {
+        stage("test") {
+            steps {
+                script {
+                    tciGeneral.timedEcho("[tciGeneral.timedEcho] This message should be shown in all use cases.")
+                    tciLogger.info("[tciLogger.info] This message should be shown in all use cases.")
+                    tciLogger.debug("[tciLogger.debug] This message should be shown only on debug mode.")
+                }
+            }
+        }
+    }
+}

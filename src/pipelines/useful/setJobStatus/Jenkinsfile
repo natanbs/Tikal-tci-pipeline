@@ -1,0 +1,24 @@
+@Library ("tci-library") _
+
+pipeline {
+    agent any
+    options {
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        ansiColor('xterm')
+        skipDefaultCheckout()
+    }
+    parameters {
+        string (name:'JOB_NAME',defaultValue:'',description:'Job name to set status')
+        booleanParam(name: 'ENABLE', defaultValue: true,description:'Check for enable, uncheck for disable' )
+    }
+    stages {
+        stage ('Set job status') {
+            steps {
+                script {
+                    tciJobs.setJobEnabledStatus(params.JOB_NAME,params.ENABLE)
+                }
+            }
+        }
+    }
+}

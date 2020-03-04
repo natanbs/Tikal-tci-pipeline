@@ -1,0 +1,36 @@
+@Library("tikal-pipelib") _
+
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('Setup')
+        {
+            steps
+            {
+                tplClearWorkspaceAsRoot()
+                checkout([
+                        $class: 'GitSCM', branches: [[name: 'master']],
+                        userRemoteConfigs:
+                                [[url: 'https://github.com/tikalk/pipelineForceCode.git',
+                                  credentialsId:'']]
+                ])
+            }
+        }
+        stage('Root Docker issue')
+        {
+            steps
+            {
+                script
+                {
+                    docker.image("python:2.7-wheezy").inside('-u root')
+                    {
+                        sh "echo root > rootDockerIssue.txt"
+                    }
+                }
+            }
+        }
+    }
+}
+

@@ -1,0 +1,24 @@
+@Library ("tci-library") _
+
+pipeline {
+    agent { label 'tci-jnlp-node' }
+    options {
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        ansiColor('xterm')
+        skipDefaultCheckout()
+    }
+    stages {
+        stage("test") {
+            steps {
+                script {
+                    // TODO fix this method: tciGeneral.clearWorkspaceAsRoot()
+                    tciGeneral.timedEcho "test tciGeneral.timedEcho"
+                    tciGeneral.setStatusByLogText("Text that will probably won't be in the log")
+                    boolean found = tciGeneral.findStringInBuildLog("timedEcho")
+                    tciGeneral.timedEcho "setStatusByLogText returned ${found}"
+                }
+            }
+        }
+    }
+}

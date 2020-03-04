@@ -1,0 +1,27 @@
+@Library ("tikal-pipelib") _
+
+pipeline
+{
+    parameters
+    {
+        string(name: 'DIR', defaultValue: '.', description: 'relative directory to work in')
+    }
+
+    agent any
+
+    stages
+    {
+        stage('tplInDir test')
+        {
+            steps
+            {
+                tplInDir(DIR)
+                {
+                    sh "pwd"
+                }
+                sh "pwd"
+            }
+        }
+    }
+}
+

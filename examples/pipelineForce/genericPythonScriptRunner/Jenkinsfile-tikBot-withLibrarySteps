@@ -1,0 +1,47 @@
+@Library("tikal-pipelib") _
+
+pipeline
+{
+    parameters
+    {
+        string(name: 'REPOSITORY_URL',
+                description: 'URL to GIT repository')
+        string(name: 'GIT_REPO_CRED',
+                description: 'Credential name of GIT user')
+        string(name: 'BRANCH',
+                defaultValue: 'master',
+                description: 'Name of branch')
+        string(name: 'REQUIREMENTS_FILE',
+                description: 'Relative path to the requirements file')
+        string(name: 'PYTHON_SCRIPT_FILE',
+                description: 'Relative path to the python script')
+    }
+    agent
+    {
+        label 'linux-docker-host-slave'
+    }
+    stages
+    {
+        stage('Setup')
+        {
+            steps
+            {
+                tplRepositoryDirectoryCheckout(REPOSITORY_URL,BRANCH,GIT_REPO_CRED)
+            }
+        }
+        stage('Script run')
+        {
+            steps
+            {
+                script
+                {
+                    docker.image("python:2.7").inside('-u root')
+                    {
+                        tplPythonRequirements(REQUIREMENTS_FILE)
+                        tplPythonScriptRun(PYTHON_SCRIPT_FILE)
+                    }
+                }
+            }
+        }
+    }
+}
